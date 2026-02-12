@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # PocketMed ID - Django Application
 
 A complete Django web application for digital healthcare records management with QR code-based patient data sharing.
