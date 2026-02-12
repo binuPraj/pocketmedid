@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}{{ patient.user.first_name }}'s Summary - PocketMed ID{% endblock %}
+
+{% block content %}
+<div class="patient-summary">
+    <!-- Patient Header -->
+    <div class="summary-section">
+        <div class="row">
+            <div class="col-md-8">
+                <h2>{{ patient.user.first_name }} {{ patient.user.last_name }}</h2>
+                <p class="text-muted">Patient ID: {{ patient.id }}</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <p><strong>Age:</strong> {{ patient.age|default:"N/A" }} years</p>
+                <p><strong>Blood Group:</strong> <span class="badge bg-danger fs-6">{{ patient.blood_group|default:"N/A" }}</span></p>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Phone:</strong> {{ patient.phone|default:"N/A" }}</p>
+                <p><strong>Address:</strong> {{ patient.address|default:"N/A" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Allergies Section -->
+    <div class="summary-section">
+        <h4>🚨 Allergies</h4>
+        {% if allergies %}
+            {% for allergy in allergies %}
+                <div class="info-card allergy mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6>{{ allergy.allergy_name }}</h6>
+                            <p class="mb-0">
+                                <strong>Severity:</strong> 
+                                <span class="badge severity-{{ allergy.get_severity_display|lower }}">
+                                    {{ allergy.get_severity_display }}
+                                </span>
+                            </p>
+                            {% if allergy.description %}
+                                <p class="mt-2 mb-0">{{ allergy.description }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No known allergies</p>
+        {% endif %}
+    </div>
+
+    <!-- Chronic Conditions Section -->
+    <div class="summary-section">
+        <h4>⚠️ Chronic Conditions</h4>
+        {% if chronic_conditions %}
+            {% for condition in chronic_conditions %}
+                <div class="info-card condition mb-3">
+                    <div>
+                        <h6>{{ condition.condition_name }}</h6>
+                        <p class="mb-0">
+                            <strong>Status:</strong> 
+                            <span class="badge status-{{ condition.status|lower }}">
+                                {{ condition.get_status_display }}
+                            </span>
+                        </p>
+                        {% if condition.diagnosis_date %}
+                            <p class="mb-0"><strong>Since:</strong> {{ condition.diagnosis_date|date:"M d, Y" }}</p>
+                        {% endif %}
+                        {% if condition.description %}
+                            <p class="mt-2 mb-0">{{ condition.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No chronic conditions recorded</p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Medicines Section -->
+    <div class="summary-section">
+        <h4>💊 Current Medications</h4>
+        {% if medicines %}
+            <div class="timeline">
+                {% for medicine in medicines %}
+                    <div class="timeline-item">
+                        <h6>{{ medicine.medicine_name }}</h6>
+                        <p class="mb-1">{{ medicine.dosage }} - {{ medicine.frequency }}</p>
+                        <p class="mb-0 text-muted small">Started: {{ medicine.start_date|date:"M d, Y" }}</p>
+                        {% if medicine.prescribing_doctor %}
+                            <p class="mb-0 text-muted small">By: {{ medicine.prescribing_doctor }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">No medications recorded</p>
+        {% endif %}
+    </div>
+
+    <!-- Medical Records Section -->
+    <div class="summary-section">
+        <h4>📄 Recent Medical Records</h4>
+        {% if medical_records %}
+            <div class="timeline">
+                {% for record in medical_records %}
+                    <div class="timeline-item">
+                        <h6>{{ record.title }}</h6>
+                        <p class="mb-1">{{ record.get_record_type_display }}</p>
+                        <p class="mb-0 text-muted small">{{ record.date_created|date:"M d, Y" }}</p>
+                        {% if record.file %}
+                            <a href="{{ record.file.url }}" target="_blank" class="btn btn-sm btn-primary mt-2">View File</a>
+                        {% endif %}
+                        {% if record.photo %}
+                            <a href="{{ record.photo.url }}" target="_blank" class="btn btn-sm btn-info mt-2">View Photo</a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">No medical records available</p>
+        {% endif %}
+    </div>
+
+    <!-- Scan History -->
+    <div class="summary-section">
+        <h4>📋 Your Scan History with this Patient</h4>
+        {% if scan_logs %}
+            <div class="timeline">
+                {% for log in scan_logs %}
+                    <div class="timeline-item">
+                        <p class="mb-0">
+                            <strong>Scanned on:</strong> {{ log.scanned_at|date:"M d, Y \a\t g:i A" }}
+                        </p>
+                        {% if log.notes %}
+                            <p class="mb-0 mt-2">{{ log.notes }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">No scan history yet</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="text-center mt-5">
+    <a href="{% url 'doctor_scan' %}" class="btn btn-primary btn-lg">← Scan Another Patient</a>
+</div>
+{% endblock %}

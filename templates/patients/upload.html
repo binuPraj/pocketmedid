@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Medical Records - PocketMed ID{% endblock %}
+
+{% block content %}
+<div class="profile-card">
+    <h2 class="mb-4">Upload Medical Records</h2>
+    
+    <form method="post" enctype="multipart/form-data" class="needs-validation">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="{{ form.record_type.id_for_label }}" class="form-label">Record Type</label>
+            {{ form.record_type }}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.title.id_for_label }}" class="form-label">Record Title</label>
+            {{ form.title }}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+            {{ form.description }}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.date_created.id_for_label }}" class="form-label">Record Date</label>
+            {{ form.date_created }}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.file.id_for_label }}" class="form-label">Upload File (PDF, DOC, etc.)</label>
+            {{ form.file }}
+            <small class="text-muted d-block">Accepted formats: PDF, DOC, DOCX, TXT</small>
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.photo.id_for_label }}" class="form-label">Upload Photo/Image</label>
+            {{ form.photo }}
+            <small class="text-muted d-block">Accepted formats: JPG, PNG, GIF</small>
+        </div>
+
+        <button type="submit" class="btn btn-success">📤 Upload Record</button>
+        <a href="{% url 'patient_profile' patient.id %}" class="btn btn-secondary">Back to Profile</a>
+    </form>
+</div>
+
+<!-- Medical Records List -->
+<div class="profile-card mt-5">
+    <h3 class="mb-4">Your Medical Records</h3>
+    
+    {% if medical_records %}
+        <div class="records-list">
+            {% for record in medical_records %}
+                <div class="record-item">
+                    <h6>{{ record.title }}</h6>
+                    <p><strong>Type:</strong> {{ record.get_record_type_display }}</p>
+                    <p><strong>Date:</strong> {{ record.date_created|date:"M d, Y" }}</p>
+                    {% if record.description %}
+                        <p><strong>Notes:</strong> {{ record.description|truncatewords:10 }}</p>
+                    {% endif %}
+                    <div class="mt-3">
+                        {% if record.file %}
+                            <a href="{{ record.file.url }}" class="btn btn-sm btn-primary" target="_blank">📄 View File</a>
+                        {% endif %}
+                        {% if record.photo %}
+                            <a href="{{ record.photo.url }}" class="btn btn-sm btn-info" target="_blank">🖼️ View Photo</a>
+                        {% endif %}
+                        <a href="{% url 'delete_medical_record' record.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')">Delete</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted text-center py-5">No medical records uploaded yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

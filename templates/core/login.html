@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Login - PocketMed ID{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="text-center mb-4">Login to PocketMed ID</h2>
+
+    {% if form.errors %}
+        <div class="alert alert-danger">
+            Invalid username or password. Please try again.
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+            {{ form.username }}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+            {{ form.password }}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-4">Login</button>
+    </form>
+
+    <p class="text-center mt-4">
+        Don't have an account? <a href="{% url 'signup' %}">Sign up here</a>
+    </p>
+</div>
+{% endblock %}

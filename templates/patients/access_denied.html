@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied - PocketMed ID{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-body text-center p-5">
+                <div style="font-size: 4rem; margin-bottom: 20px;">🔒</div>
+                <h2 class="card-title text-danger">Access Denied</h2>
+                <p class="card-text text-muted mt-3">
+                    {{ message }}
+                </p>
+                <hr>
+                <p class="text-muted small">
+                    This patient record can only be accessed with a valid QR code token.
+                </p>
+                <a href="{% url 'home' %}" class="btn btn-primary mt-4">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

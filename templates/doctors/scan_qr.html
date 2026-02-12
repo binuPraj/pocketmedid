@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Scan Patient QR - PocketMed ID{% endblock %}
+
+{% block content %}
+<div class="scanner-container">
+    <h2>📱 Scan Patient QR Code</h2>
+    <p class="text-muted">Upload a QR code image to view patient's health details</p>
+
+    {% if error_message %}
+        <div class="alert alert-danger mt-4">
+            <strong>❌ Error:</strong> {{ error_message }}
+        </div>
+    {% endif %}
+
+    <!-- QR Upload Form -->
+    <div class="upload-section mt-5">
+        <h4 class="mb-4">📤 Upload QR Code Image</h4>
+        
+        <form method="post" enctype="multipart/form-data" id="qrUploadForm">
+            {% csrf_token %}
+            
+            <div class="upload-area">
+                <input type="file" 
+                       name="qr_image" 
+                       id="qrImageInput" 
+                       accept="image/*"
+                       required
+                       style="display: none;">
+                
+                <label for="qrImageInput" class="upload-label">
+                    <div style="cursor: pointer;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">📸</div>
+                        <p><strong>Click to upload or drag & drop</strong></p>
+                        <p class="text-muted" style="font-size: 0.9rem;">PNG, JPG, GIF up to 10MB</p>
+                    </div>
+                </label>
+                
+                <div id="fileName" class="mt-3" style="display: none;">
+                    <p><strong>Selected:</strong> <span id="fileNameText"></span></p>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-lg mt-4 w-100">
+                🔍 Scan & View Patient Details
+            </button>
+        </form>
+    </div>
+
+    <!-- Instructions -->
+    <div class="alert alert-info mt-5">
+        <h5>📋 How to use:</h5>
+        <ol>
+            <li>Ask patient to go to their profile page</li>
+            <li>Patient should download or screenshot their QR code from their profile</li>
+            <li>Upload that QR code image using the form above</li>
+            <li>The system will automatically decode and verify the QR code</li>
+            <li>You'll be shown the patient's complete health record</li>
+        </ol>
+    </div>
+
+    <!-- Requirements -->
+    <div class="alert alert-warning mt-4">
+        <h5>⚠️ Important Requirements:</h5>
+        <ul style="margin-bottom: 0;">
+            <li><strong>Only upload QR codes from PocketMed ID</strong> - Other QR codes won't work</li>
+            <li>The QR code must be clear and fully visible</li>
+            <li>The QR code should be generated from the patient's profile page</li>
+            <li>Each QR code is unique and linked to one patient</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Handle file selection
+    const fileInput = document.getElementById('qrImageInput');
+    const fileNameDiv = document.getElementById('fileName');
+    const fileNameText = document.getElementById('fileNameText');
+    const uploadArea = document.querySelector('.upload-area');
+    
+    // File input change
+    fileInput.addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            fileNameText.textContent = this.files[0].name;
+            fileNameDiv.style.display = 'block';
+        }
+    });
+    
+    // Drag and drop
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.backgroundColor = '#e7f3ff';
+        this.style.borderColor = '#007bff';
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.style.backgroundColor = '';
+        this.style.borderColor = '';
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.style.backgroundColor = '';
+        this.style.borderColor = '';
+        
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            fileInput.files = e.dataTransfer.files;
+            fileNameText.textContent = e.dataTransfer.files[0].name;
+            fileNameDiv.style.display = 'block';
+        }
+    });
+</script>
+
+<style>
+    .scanner-container {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .upload-section {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 8px;
+    }
+    
+    .upload-area {
+        background-color: #f9f9f9;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover {
+        border-color: #007bff;
+        background-color: #e7f3ff;
+    }
+    
+    .upload-label {
+        cursor: pointer;
+        display: block;
+    }
+    
+    .upload-label p {
+        margin: 5px 0;
+    }
+    
+    @media (max-width: 768px) {
+        .scanner-container {
+            padding: 15px;
+        }
+        
+        .upload-area {
+            padding: 25px;
+        }
+    }
+</style>
+{% endblock %}

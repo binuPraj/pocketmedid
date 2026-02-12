@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ patient.user.first_name }}'s Profile - PocketMed ID{% endblock %}
+
+{% block content %}
+<div class="profile-card">
+    <div class="profile-header">
+        <div class="profile-info">
+            <h2>{{ patient.user.first_name }} {{ patient.user.last_name }}</h2>
+            <p><strong>Age:</strong> {{ patient.age|default:"Not specified" }} years</p>
+            <p><strong>Blood Group:</strong> <span class="badge bg-danger">{{ patient.blood_group|default:"Not specified" }}</span></p>
+            <p><strong>Phone:</strong> {{ patient.phone|default:"Not specified" }}</p>
+            <p><strong>Address:</strong> {{ patient.address|default:"Not specified" }}</p>
+        </div>
+        <div class="qr-code-container">
+            <p class="qr-label">Your Health QR Code</p>
+            {% if patient.qr_code %}
+                <img src="{{ patient.qr_code.url }}" alt="Patient QR Code" id="qrCodeImage">
+                <p class="text-muted mt-2" style="font-size: 0.85rem;">
+                    📱 Share this QR code with doctors<br>
+                    Right-click to save or take a screenshot
+                </p>
+                <a href="{% url 'download_qr' patient.id %}" class="btn btn-sm btn-primary mt-2">
+                    📥 Download QR Code
+                </a>
+            {% else %}
+                <p class="text-muted">QR Code will be generated</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Section -->
+<div class="profile-card">
+    <h3 class="mb-4">Edit Profile Information</h3>
+    <form method="post" class="needs-validation">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.age.id_for_label }}" class="form-label">Age</label>
+                {{ form.age }}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.blood_group.id_for_label }}" class="form-label">Blood Group</label>
+                {{ form.blood_group }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone</label>
+                {{ form.phone }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+            {{ form.address }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>
+
+<!-- Allergies Section -->
+<div class="profile-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Allergies</h3>
+        <a href="{% url 'add_allergy' patient.id %}" class="btn btn-sm btn-success">+ Add Allergy</a>
+    </div>
+    
+    {% if allergies %}
+        {% for allergy in allergies %}
+            <div class="info-card allergy">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5>{{ allergy.allergy_name }}</h5>
+                        <p><strong>Severity:</strong> <span class="badge severity-{{ allergy.get_severity_display|lower }}">{{ allergy.get_severity_display }}</span></p>
+                        {% if allergy.description %}
+                            <p><strong>Description:</strong> {{ allergy.description }}</p>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'delete_allergy' allergy.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this allergy?')">Delete</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No allergies added yet.</p>
+    {% endif %}
+</div>
+
+<!-- Chronic Conditions Section -->
+<div class="profile-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Chronic Conditions</h3>
+        <a href="{% url 'add_condition' patient.id %}" class="btn btn-sm btn-success">+ Add Condition</a>
+    </div>
+    
+    {% if chronic_conditions %}
+        {% for condition in chronic_conditions %}
+            <div class="info-card condition">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5>{{ condition.condition_name }}</h5>
+                        <p><strong>Status:</strong> <span class="badge status-{{ condition.status|lower }}">{{ condition.get_status_display }}</span></p>
+                        {% if condition.diagnosis_date %}
+                            <p><strong>Diagnosis Date:</strong> {{ condition.diagnosis_date|date:"M d, Y" }}</p>
+                        {% endif %}
+                        {% if condition.description %}
+                            <p><strong>Description:</strong> {{ condition.description }}</p>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'delete_condition' condition.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this condition?')">Delete</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No chronic conditions added yet.</p>
+    {% endif %}
+</div>
+
+<!-- Emergency Contacts Section -->
+<div class="profile-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Emergency Contacts</h3>
+        <a href="{% url 'add_emergency_contact' patient.id %}" class="btn btn-sm btn-success">+ Add Contact</a>
+    </div>
+    
+    {% if emergency_contacts %}
+        {% for contact in emergency_contacts %}
+            <div class="info-card emergency">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5>{{ contact.name }}</h5>
+                        <p><strong>Relationship:</strong> {{ contact.relationship }}</p>
+                        <p><strong>Phone:</strong> <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></p>
+                    </div>
+                    <a href="{% url 'delete_emergency_contact' contact.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this contact?')">Delete</a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No emergency contacts added yet.</p>
+    {% endif %}
+</div>
+
+<!-- Recent Medicines Section -->
+<div class="profile-card">
+    <h3 class="mb-4">Current Medicines</h3>
+    
+    {% if medicines %}
+        {% for medicine in medicines %}
+            <div class="info-card medicine">
+                <h5>{{ medicine.medicine_name }}</h5>
+                <p><strong>Dosage:</strong> {{ medicine.dosage }}</p>
+                <p><strong>Frequency:</strong> {{ medicine.frequency }}</p>
+                <p><strong>Start Date:</strong> {{ medicine.start_date|date:"M d, Y" }}</p>
+                {% if medicine.end_date %}
+                    <p><strong>End Date:</strong> {{ medicine.end_date|date:"M d, Y" }}</p>
+                {% endif %}
+                {% if medicine.prescribing_doctor %}
+                    <p><strong>Prescribed by:</strong> {{ medicine.prescribing_doctor }}</p>
+                {% endif %}
+                {% if medicine.reason %}
+                    <p><strong>Reason:</strong> {{ medicine.reason }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No medicines recorded yet.</p>
+    {% endif %}
+    
+    <a href="{% url 'patient_upload' patient.id %}" class="btn btn-primary mt-3">View All Records</a>
+</div>
+
+<div class="text-center mt-5">
+    <a href="{% url 'patient_upload' patient.id %}" class="btn btn-lg btn-primary">📄 View & Upload Records</a>
+</div>
+{% endblock %}

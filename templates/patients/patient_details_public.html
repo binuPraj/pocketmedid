@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}{{ patient.user.first_name }}'s Health Record - PocketMed ID{% endblock %}
+
+{% block content %}
+<div class="patient-summary">
+    <!-- Patient Header -->
+    <div class="summary-section">
+        <div class="row">
+            <div class="col-md-8">
+                <h2>{{ patient.user.first_name }} {{ patient.user.last_name }}'s Health Record</h2>
+                <p class="text-muted" style="font-size: 0.9rem;">
+                    {% if accessed_via_qr %}
+                        <span class="badge bg-success">✓ Accessed via QR Code</span>
+                    {% endif %}
+                    Patient ID: {{ patient.id }}
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <p><strong>Age:</strong> {{ patient.age|default:"N/A" }} years</p>
+                <p><strong>Blood Group:</strong> <span class="badge bg-danger fs-6">{{ patient.blood_group|default:"N/A" }}</span></p>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Phone:</strong> {{ patient.phone|default:"N/A" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Address:</strong> {{ patient.address|default:"N/A" }}</p>
+            </div>
+        </div>
+        {% if is_read_only %}
+            <div class="alert alert-info mt-3 mb-0">
+                <strong>📋 Read-Only Mode:</strong> You can view this information but cannot make changes.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Allergies Section -->
+    <div class="summary-section">
+        <h4>🚨 Allergies</h4>
+        {% if allergies %}
+            {% for allergy in allergies %}
+                <div class="info-card allergy mb-3">
+                    <div>
+                        <h6>{{ allergy.allergy_name }}</h6>
+                        <p class="mb-0">
+                            <strong>Severity:</strong> 
+                            <span class="badge severity-{{ allergy.get_severity_display|lower }}">
+                                {{ allergy.get_severity_display }}
+                            </span>
+                        </p>
+                        {% if allergy.description %}
+                            <p class="mt-2 mb-0"><strong>Details:</strong> {{ allergy.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No known allergies</p>
+        {% endif %}
+    </div>
+
+    <!-- Chronic Conditions Section -->
+    <div class="summary-section">
+        <h4>⚠️ Chronic Conditions</h4>
+        {% if chronic_conditions %}
+            {% for condition in chronic_conditions %}
+                <div class="info-card condition mb-3">
+                    <div>
+                        <h6>{{ condition.condition_name }}</h6>
+                        <p class="mb-0">
+                            <strong>Status:</strong> 
+                            <span class="badge status-{{ condition.status|lower }}">
+                                {{ condition.get_status_display }}
+                            </span>
+                        </p>
+                        {% if condition.diagnosis_date %}
+                            <p class="mb-0"><strong>Diagnosed:</strong> {{ condition.diagnosis_date|date:"M d, Y" }}</p>
+                        {% endif %}
+                        {% if condition.description %}
+                            <p class="mt-2 mb-0"><strong>Details:</strong> {{ condition.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No chronic conditions recorded</p>
+        {% endif %}
+    </div>
+
+    <!-- Emergency Contacts Section -->
+    <div class="summary-section">
+        <h4>📞 Emergency Contacts</h4>
+        {% if emergency_contacts %}
+            {% for contact in emergency_contacts %}
+                <div class="info-card emergency mb-3">
+                    <div>
+                        <h6>{{ contact.name }}</h6>
+                        <p class="mb-0"><strong>Relationship:</strong> {{ contact.relationship }}</p>
+                        <p class="mb-0"><strong>Phone:</strong> {{ contact.phone }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No emergency contacts recorded</p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Medicines Section -->
+    <div class="summary-section">
+        <h4>💊 Current Medications</h4>
+        {% if medicines %}
+            <div class="timeline">
+                {% for medicine in medicines %}
+                    <div class="timeline-item">
+                        <h6>{{ medicine.medicine_name }}</h6>
+                        <p class="mb-1"><strong>Dosage:</strong> {{ medicine.dosage }}</p>
+                        <p class="mb-1"><strong>Frequency:</strong> {{ medicine.frequency }}</p>
+                        <p class="mb-0 text-muted small">Started: {{ medicine.start_date|date:"M d, Y" }}</p>
+                        {% if medicine.end_date %}
+                            <p class="mb-0 text-muted small">Ends: {{ medicine.end_date|date:"M d, Y" }}</p>
+                        {% endif %}
+                        {% if medicine.prescribing_doctor %}
+                            <p class="mb-0 text-muted small">Prescribed by: {{ medicine.prescribing_doctor }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">No medications recorded</p>
+        {% endif %}
+    </div>
+
+    <!-- Medical Records Section -->
+    <div class="summary-section">
+        <h4>📄 Medical Records & Past History</h4>
+        {% if medical_records %}
+            <div class="timeline">
+                {% for record in medical_records %}
+                    <div class="timeline-item">
+                        <h6>{{ record.title }}</h6>
+                        <p class="mb-1"><strong>Type:</strong> {{ record.get_record_type_display }}</p>
+                        <p class="mb-1">{{ record.date_created|date:"M d, Y" }}</p>
+                        {% if record.description %}
+                            <p class="mb-2 text-muted">{{ record.description }}</p>
+                        {% endif %}
+                        <div>
+                            {% if record.file %}
+                                <a href="{{ record.file.url }}" target="_blank" class="btn btn-sm btn-primary">
+                                    📄 View Document
+                                </a>
+                            {% endif %}
+                            {% if record.photo %}
+                                <a href="{{ record.photo.url }}" target="_blank" class="btn btn-sm btn-info">
+                                    🖼️ View Image
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">No medical records available</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="text-center mt-5">
+    <a href="{% url 'home' %}" class="btn btn-secondary">← Back to Home</a>
+</div>
+
+<style>
+    .patient-summary {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .summary-section {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #eee;
+    }
+
+    .summary-section:last-child {
+        border-bottom: none;
+    }
+
+    .summary-section h4 {
+        color: #007bff;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .info-card {
+        background: white;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        margin-bottom: 12px;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .info-card.allergy {
+        border-left-color: #dc3545;
+    }
+
+    .info-card.condition {
+        border-left-color: #ffc107;
+    }
+
+    .info-card.emergency {
+        border-left-color: #fd7e14;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 40px;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+    }
+
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: -25px;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #007bff;
+        border: 3px solid white;
+        box-shadow: 0 0 0 3px #007bff;
+    }
+
+    .timeline-item:after {
+        content: '';
+        position: absolute;
+        left: -19px;
+        top: 12px;
+        width: 2px;
+        height: calc(100% + 8px);
+        background-color: #ddd;
+    }
+
+    .timeline-item:last-child:after {
+        display: none;
+    }
+
+    .timeline-item h6 {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .timeline-item p {
+        margin: 5px 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+
+    .severity-mild {
+        background-color: #90EE90;
+        color: #2d5f2d;
+    }
+
+    .severity-moderate {
+        background-color: #FFD700;
+        color: #8b7500;
+    }
+
+    .severity-severe {
+        background-color: #FF6347;
+        color: white;
+    }
+
+    .status-active {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .status-inactive {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .status-resolved {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .patient-summary {
+            padding: 15px;
+        }
+
+        .summary-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+        }
+    }
+</style>
+{% endblock %}

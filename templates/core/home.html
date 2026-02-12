@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}PocketMed ID - Home{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1>💊 PocketMed ID</h1>
+    <p>Your Health Records, Always in Your Pocket</p>
+    <p class="text-white-50">Secure digital health records for patients and doctors</p>
+    
+    {% if not user.is_authenticated %}
+        <div class="role-buttons">
+            <a href="{% url 'signup' %}?role=patient" class="btn role-btn role-btn-patient">👤 I am a Patient</a>
+            <a href="{% url 'signup' %}?role=doctor" class="btn role-btn role-btn-doctor">👨‍⚕️ I am a Doctor</a>
+        </div>
+    {% endif %}
+</div>
+
+{% if user.is_authenticated %}
+    <div class="row mt-5">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">👤 Patient Portal</h5>
+                    <p class="card-text">Access and manage your medical records, allergies, and health information.</p>
+                    <a href="{% url 'patient_dashboard' %}" class="btn btn-success">Go to Patient Portal</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">👨‍⚕️ Doctor Portal</h5>
+                    <p class="card-text">Scan patient QR codes and access their health summaries.</p>
+                    <a href="{% url 'doctor_dashboard' %}" class="btn btn-primary">Go to Doctor Portal</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="row mt-5">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">🔐 Secure Login</h5>
+                    <p class="card-text">Already have an account? Log in to access your health data.</p>
+                    <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📝 Create Account</h5>
+                    <p class="card-text">New user? Sign up to get started with PocketMed ID.</p>
+                    <a href="{% url 'signup' %}" class="btn btn-success">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">🏥 For Patients</h5>
+                    <p class="card-text text-muted">Store and manage your complete medical history in one secure place.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">📱 QR Code</h5>
+                    <p class="card-text text-muted">Share your health data instantly with doctors using QR codes.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">⚡ Quick Access</h5>
+                    <p class="card-text text-muted">Doctors can scan and instantly see your health summary.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
